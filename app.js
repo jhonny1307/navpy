@@ -46,9 +46,9 @@ function browserInput(promptText) {
 
 async function executePython(code) {
   const bridge = `
+import ast
 import sys
 import io
-import builtins
 import js
 
 class BrowserStdout(io.TextIOBase):
@@ -62,19 +62,36 @@ class BrowserStdout(io.TextIOBase):
 sys.stdout = BrowserStdout()
 sys.stderr = BrowserStdout()
 
-async def _browser_input(prompt=''):
+async def __nav_input(prompt=''):
     return await js.browserInput(str(prompt))
 
-async def _run_user_code():
-    original_input = builtins.input
-    builtins.input = lambda prompt='': js.browserInput(str(prompt))
-    try:
-        namespace = {'__name__': '__main__'}
-        exec(compile(${JSON.stringify(code)}, '<main.py>', 'exec'), namespace, namespace)
-    finally:
-        builtins.input = original_input
+class InputAwaiter(ast.NodeTransformer):
+    def visit_Call(self, node):
+        node = self.generic_visit(node)
+        if isinstance(node.func, ast.Name) and node.func.id == 'input':
+            return ast.copy_location(ast.Await(value=ast.Call(
+                func=ast.Name(id='__nav_input', ctx=ast.Load()),
+                args=node.args,
+                keywords=node.keywords
+            )), node)
+        return node
 
-await _run_user_code()
+source = ${JSON.stringify(code)}
+tree = ast.parse(source, filename='<main.py>')
+tree = InputAwaiter().visit(tree)
+ast.fix_missing_locations(tree)
+
+main_fn = ast.AsyncFunctionDef(
+    name='__nav_main',
+    args=ast.arguments(posonlyargs=[], args=[], kwonlyargs=[], kw_defaults=[], defaults=[]),
+    body=tree.body,
+    decorator_list=[]
+)
+module = ast.Module(body=[main_fn], type_ignores=[])
+ast.fix_missing_locations(module)
+namespace = {'__name__': '__main__', '__nav_input': __nav_input}
+exec(compile(module, '<main.py>', 'exec'), namespace, namespace)
+await namespace['__nav_main']()
 `;
 
   pyodide.globals.set('consoleWrite', write);
