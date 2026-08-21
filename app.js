@@ -45,6 +45,12 @@ function browserInput(promptText) {
 }
 
 async function executePython(code) {
+  // Expose the callbacks on the actual JavaScript global object.
+  // pyodide.globals.set() only creates Python globals, so js.consoleWrite
+  // would otherwise raise AttributeError.
+  globalThis.consoleWrite = write;
+  globalThis.browserInput = browserInput;
+
   const bridge = `
 import ast
 import sys
@@ -94,8 +100,6 @@ exec(compile(module, '<main.py>', 'exec'), namespace, namespace)
 await namespace['__nav_main']()
 `;
 
-  pyodide.globals.set('consoleWrite', write);
-  pyodide.globals.set('browserInput', browserInput);
   await pyodide.runPythonAsync(bridge);
 }
 
