@@ -5,11 +5,12 @@ let inputResolver = null;
 
 const editor = document.getElementById('editor');
 const terminal = document.getElementById('terminal');
+const terminalPanel = document.getElementById('terminalPanel');
 const terminalInput = document.getElementById('terminalInput');
 const sendInput = document.getElementById('sendInput');
 const runButton = document.getElementById('run');
 const clearButton = document.getElementById('clear');
-const status = document.getElementById('status');
+const terminalToggle = document.getElementById('terminalToggle');
 
 function write(text = '', className = 'output') {
   const line = document.createElement('div');
@@ -19,17 +20,28 @@ function write(text = '', className = 'output') {
   terminal.scrollTop = terminal.scrollHeight;
 }
 
+function openTerminal() {
+  terminalPanel.classList.add('open');
+}
+
+function toggleTerminal() {
+  terminalPanel.classList.toggle('open');
+}
+
 function setInputEnabled(enabled) {
   terminalInput.disabled = !enabled;
   sendInput.disabled = !enabled;
-  if (enabled) terminalInput.focus();
+  if (enabled) {
+    openTerminal();
+    terminalInput.focus();
+  }
 }
 
 function submitInput() {
   if (!waitingForInput || !inputResolver) return;
   const value = terminalInput.value;
   terminalInput.value = '';
-  write(value);
+  write(`› ${value}`);
   const resolve = inputResolver;
   inputResolver = null;
   waitingForInput = false;
@@ -38,6 +50,7 @@ function submitInput() {
 }
 
 function browserInput(promptText) {
+  openTerminal();
   if (promptText) write(promptText, 'input-waiting');
   waitingForInput = true;
   setInputEnabled(true);
@@ -45,9 +58,6 @@ function browserInput(promptText) {
 }
 
 async function executePython(code) {
-  // Expose the callbacks on the actual JavaScript global object.
-  // pyodide.globals.set() only creates Python globals, so js.consoleWrite
-  // would otherwise raise AttributeError.
   globalThis.consoleWrite = write;
   globalThis.browserInput = browserInput;
 
@@ -107,6 +117,7 @@ async function run() {
   if (!pyodide || running) return;
   running = true;
   runButton.disabled = true;
+  openTerminal();
   write('$ python main.py');
   try {
     await executePython(editor.value);
@@ -118,11 +129,11 @@ async function run() {
     inputResolver = null;
     setInputEnabled(false);
     runButton.disabled = false;
-    write('');
   }
 }
 
 runButton.addEventListener('click', run);
+terminalToggle.addEventListener('click', toggleTerminal);
 clearButton.addEventListener('click', () => terminal.replaceChildren());
 sendInput.addEventListener('click', submitInput);
 terminalInput.addEventListener('keydown', event => {
@@ -145,10 +156,8 @@ editor.addEventListener('keydown', event => {
 (async () => {
   try {
     pyodide = await loadPyodide();
-    status.textContent = `Python ${pyodide.runPython('import sys; sys.version.split()[0]')} pronto`;
     runButton.disabled = false;
   } catch (error) {
-    status.textContent = 'Falha ao carregar Python';
     write(String(error), 'error');
   }
 })();
