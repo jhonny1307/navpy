@@ -8,9 +8,13 @@ const terminal = document.getElementById('terminal');
 const terminalPanel = document.getElementById('terminalPanel');
 const terminalInput = document.getElementById('terminalInput');
 const sendInput = document.getElementById('sendInput');
+const inputPrompt = document.getElementById('inputPrompt');
 const runButton = document.getElementById('run');
-const clearButton = document.getElementById('clear');
 const terminalToggle = document.getElementById('terminalToggle');
+const argvInput = document.getElementById('argv');
+const filenameInput = document.getElementById('filename');
+const uploadInput = document.getElementById('upload');
+const downloadButton = document.getElementById('download');
 
 function write(text = '', className = 'output') {
   const line = document.createElement('div');
@@ -22,18 +26,27 @@ function write(text = '', className = 'output') {
 
 function openTerminal() {
   terminalPanel.classList.add('open');
+  terminalToggle.setAttribute('aria-expanded', 'true');
+}
+
+function closeTerminal() {
+  terminalPanel.classList.remove('open');
+  terminalToggle.setAttribute('aria-expanded', 'false');
 }
 
 function toggleTerminal() {
-  terminalPanel.classList.toggle('open');
+  if (terminalPanel.classList.contains('open')) closeTerminal();
+  else openTerminal();
 }
 
-function setInputEnabled(enabled) {
+function setInputEnabled(enabled, promptText = '') {
   terminalInput.disabled = !enabled;
   sendInput.disabled = !enabled;
   if (enabled) {
-    openTerminal();
+    inputPrompt.textContent = promptText || '›';
     terminalInput.focus();
+  } else {
+    inputPrompt.textContent = '›';
   }
 }
 
@@ -51,13 +64,29 @@ function submitInput() {
 
 function browserInput(promptText) {
   openTerminal();
-  if (promptText) write(promptText, 'input-waiting');
   waitingForInput = true;
-  setInputEnabled(true);
+  setInputEnabled(true, promptText);
+  if (promptText) write(promptText, 'input-waiting');
   return new Promise(resolve => { inputResolver = resolve; });
 }
 
-async function executePython(code) {
+function parseArgv(text) {
+  const matches = text.match(/"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\S+/g) || [];
+  return matches.map(arg => {
+    if ((arg.startsWith('"') && arg.endsWith('"')) || (arg.startsWith("'") && arg.endsWith("'"))) {
+      return arg.slice(1, -1);
+    }
+    return arg;
+  });
+}
+
+function pythonFilename() {
+  let name = filenameInput.value.trim() || 'main.py';
+  if (!name.toLowerCase().endsWith('.py')) name += '.py';
+  return name;
+}
+
+async function executePython(code, args) {
   globalThis.consoleWrite = write;
   globalThis.browserInput = browserInput;
 
@@ -77,6 +106,7 @@ class BrowserStdout(io.TextIOBase):
 
 sys.stdout = BrowserStdout()
 sys.stderr = BrowserStdout()
+sys.argv = ${JSON.stringify(args)}
 
 async def __nav_input(prompt=''):
     return await js.browserInput(str(prompt))
@@ -93,7 +123,7 @@ class InputAwaiter(ast.NodeTransformer):
         return node
 
 source = ${JSON.stringify(code)}
-tree = ast.parse(source, filename='<main.py>')
+tree = ast.parse(source, filename=${JSON.stringify(pythonFilename())})
 tree = InputAwaiter().visit(tree)
 ast.fix_missing_locations(tree)
 
@@ -106,7 +136,7 @@ main_fn = ast.AsyncFunctionDef(
 module = ast.Module(body=[main_fn], type_ignores=[])
 ast.fix_missing_locations(module)
 namespace = {'__name__': '__main__', '__nav_input': __nav_input}
-exec(compile(module, '<main.py>', 'exec'), namespace, namespace)
+exec(compile(module, ${JSON.stringify(pythonFilename())}, 'exec'), namespace, namespace)
 await namespace['__nav_main']()
 `;
 
@@ -118,9 +148,12 @@ async function run() {
   running = true;
   runButton.disabled = true;
   openTerminal();
-  write('$ python main.py');
+  write(`$ python ${pythonFilename()}${argvInput.value.trim() ? ` ${argvInput.value.trim()}` : ''}`);
+
+  const args = [pythonFilename(), ...parseArgv(argvInput.value)];
+
   try {
-    await executePython(editor.value);
+    await executePython(editor.value, args);
   } catch (error) {
     write(String(error), 'error');
   } finally {
@@ -132,9 +165,27 @@ async function run() {
   }
 }
 
+function downloadCode() {
+  const blob = new Blob([editor.value], { type: 'text/x-python;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = pythonFilename();
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+uploadInput.addEventListener('change', async () => {
+  const file = uploadInput.files?.[0];
+  if (!file) return;
+  editor.value = await file.text();
+  filenameInput.value = file.name.toLowerCase().endsWith('.py') ? file.name : `${file.name}.py`;
+  uploadInput.value = '';
+});
+
+downloadButton.addEventListener('click', downloadCode);
 runButton.addEventListener('click', run);
 terminalToggle.addEventListener('click', toggleTerminal);
-clearButton.addEventListener('click', () => terminal.replaceChildren());
 sendInput.addEventListener('click', submitInput);
 terminalInput.addEventListener('keydown', event => {
   if (event.key === 'Enter') submitInput();
