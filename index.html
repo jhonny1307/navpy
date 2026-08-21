@@ -4,7 +4,8 @@
 <body>
 <header class="filebar"><input id="filename" value="main.py" aria-label="Nome do arquivo"><div class="file-actions"><label class="button" for="upload">↑ Upload</label><input id="upload" type="file" multiple hidden><button id="download">↓ Download</button><button id="save" aria-label="Salvar no armazenamento local" title="Salvar">💾</button></div></header>
 <main>
-<aside class="file-manager" id="fileManager"><div class="file-manager-title"><span>Arquivos</span><button id="fileManagerToggle" aria-label="Recolher arquivos" title="Recolher arquivos">◀</button></div><div id="fileList"></div></aside>
+<aside class="file-manager" id="fileManager"><div class="file-manager-title"><span>Arquivos</span></div><div id="fileList"></div></aside>
+<button class="file-manager-toggle" id="fileManagerToggle" aria-label="Recolher arquivos" title="Recolher arquivos">◀</button>
 <section class="workspace"><section class="editor-panel"><textarea id="editor" spellcheck="false" aria-label="Editor de código">print("Olá, mundo!")
 
 nome = input("Seu nome: ")
