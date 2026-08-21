@@ -1,0 +1,20 @@
+Tip - You can pass command-line arguments through the Arguments - sys.argv() field.
+Tip - The terminal supports Python input() without leaving the browser.
+Tip - Save stores the current workspace in local storage.
+Tip - The workspace can contain multiple Python and text files.
+Tip - Open a folder to work inside it, then use [..] to go back.
+Tip - Uploading a ZIP to root preserves its folder structure.
+Tip - Download from here (ZIP) exports the current folder and everything inside it.
+Tip - Download from root (ZIP) exports the entire workspace.
+Tip - The editor runs Python locally through Pyodide, so your code does not need a Python server.
+Tip - You can create files directly from the Workspace or the Files menu.
+Tip - Files that the IDE can render are shown directly in the editor area.
+Tip - Compiled files that the IDE cannot render can still be stored and downloaded.
+Tip - Clicking outside the Files menu closes it.
+Tip - The terminal can be expanded from the bottom of the editor.
+Tip - Clear removes the current terminal output without changing your files.
+Tip - New project can delete the workspace, or download it as a ZIP before deleting it.
+Tip - Changes remain when you switch between files, but Save is required to persist them after closing the page.
+Tip - The IDE warns you before closing the page when there are unsaved workspace changes.
+Tip - You can upload files directly into the current folder.
+Tip - Python modules can be split across multiple files in the same workspace.
