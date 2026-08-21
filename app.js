@@ -15,16 +15,15 @@ function pythonFilename(){let n=filenameInput.value.trim()||'main.py';return n.t
 function isText(name,type=''){return type.startsWith('text/')||/\.(py|txt|md|json|csv|html|css|js|xml|yaml|yml|toml|ini|cfg|log)$/i.test(name)}
 function renderFile(name){const f=files[name];preview.classList.add('hidden');editor.classList.remove('hidden');if(!f)return;if(f.type==='image'){editor.classList.add('hidden');preview.classList.remove('hidden');preview.replaceChildren();const img=document.createElement('img');img.src=f.content;preview.appendChild(img)}else editor.value=f.content||''}
 function saveCurrent(){if(!files[currentFile])files[currentFile]={type:'text',content:''};if(files[currentFile].type==='text')files[currentFile].content=editor.value}
-function renderFileList(){fileList.replaceChildren();Object.keys(files).sort((a,b)=>a.localeCompare(b)).forEach(name=>{const b=document.createElement('button');b.className='file-item'+(name===currentFile?' active':'');b.textContent=name;b.title=name;b.onclick=()=>openFile(name);fileList.appendChild(b)})}
+function renderFileList(){fileList.replaceChildren();Object.keys(files).sort((a,b)=>a.localeCompare(b)).forEach(name=>{const row=document.createElement('div');row.className='file-row';const b=document.createElement('button');b.className='file-item'+(name===currentFile?' active':'');b.textContent=name;b.title=name;b.onclick=()=>openFile(name);const d=document.createElement('button');d.className='file-delete';d.textContent='🗑';d.title=`Excluir ${name}`;d.setAttribute('aria-label',`Excluir ${name}`);d.onclick=e=>{e.stopPropagation();deleteFile(name)};row.append(b,d);fileList.appendChild(row)})}
 function openFile(name){saveCurrent();currentFile=name;filenameInput.value=name;renderFile(name);renderFileList()}
+function deleteFile(name){if(!files[name])return;if(Object.keys(files).length===1){write('Não é possível excluir o último arquivo.','error');return}delete files[name];try{if(pyodide)pyodide.FS.unlink('/'+name)}catch(e){}if(currentFile===name){currentFile=Object.keys(files)[0];filenameInput.value=currentFile;renderFile(currentFile)}renderFileList()}
 function persist(){saveCurrent();try{localStorage.setItem(STORAGE_KEY,JSON.stringify(files));write('✓ Arquivos salvos localmente.')}catch(e){write(`Erro ao salvar: ${e}`,'error')}}
 function loadSaved(){try{const data=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');if(data&&typeof data==='object'&&Object.keys(data).length){files=data;currentFile=Object.keys(files)[0];filenameInput.value=currentFile;renderFile(currentFile);return true}}catch(e){}return false}
 async function addFile(file){if(isText(file.name,file.type))files[file.name]={type:'text',content:await file.text()};else if(file.type.startsWith('image/'))files[file.name]={type:'image',content:await blobToDataURL(file)};else files[file.name]={type:'binary',content:await blobToDataURL(file)}}
 function blobToDataURL(blob){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(blob)})}
 function dataURLBytes(url){const data=url.split(',')[1]||'';const bin=atob(data);const bytes=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);return bytes}
-async function executePython(code,args){globalThis.consoleWrite=write;globalThis.browserInput=browserInput;
-  for(const [name,f] of Object.entries(files)){try{if(f.type==='text')pyodide.FS.writeFile('/'+name,f.content);else pyodide.FS.writeFile('/'+name,dataURLBytes(f.content))}catch(e){}}
-  const bridge=`
+async function executePython(code,args){globalThis.consoleWrite=write;globalThis.browserInput=browserInput;for(const [name,f] of Object.entries(files)){try{if(f.type==='text')pyodide.FS.writeFile('/'+name,f.content);else pyodide.FS.writeFile('/'+name,dataURLBytes(f.content))}catch(e){}}const bridge=`
 import ast,sys,io,js
 class BrowserStdout(io.TextIOBase):
  def write(self,s):
