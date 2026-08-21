@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NavTerminal</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <strong>NavTerminal</strong>
+    <span id="status">Carregando Python...</span>
+    <div class="actions">
+      <button id="run">▶ Executar</button>
+      <button id="clear">Limpar terminal</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="editor-panel">
+      <div class="panel-title">main.py</div>
+      <textarea id="editor" spellcheck="false" aria-label="Editor Python">print("Olá, mundo!")
+
+nome = input("Seu nome: ")
+print(f"Olá, {nome}!")</textarea>
+    </section>
+
+    <section class="terminal-panel">
+      <div class="panel-title">Terminal</div>
+      <div id="terminal" role="log" aria-live="polite"></div>
+      <div class="terminal-input-row">
+        <span>›</span>
+        <input id="terminalInput" autocomplete="off" spellcheck="false" placeholder="Digite uma entrada para input()..." disabled>
+        <button id="sendInput" disabled>Enviar</button>
+      </div>
+    </section>
+  </main>
+
+  <footer>Python roda localmente no navegador com Pyodide. Nenhum código é enviado ao servidor.</footer>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.28.2/full/pyodide.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
