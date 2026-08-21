@@ -1,48 +1,16 @@
 <!doctype html>
 <html lang="pt-BR">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>NavTerminal</title>
-  <link rel="stylesheet" href="style.css">
-</head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>NavTerminal</title><link rel="stylesheet" href="style.css"></head>
 <body>
-  <header class="filebar">
-    <input id="filename" value="main.py" aria-label="Nome do arquivo">
-    <div class="file-actions">
-      <label class="button" for="upload">↑ Upload</label>
-      <input id="upload" type="file" accept=".py,.txt,text/plain" hidden>
-      <button id="download">↓ Download</button>
-    </div>
-  </header>
-
-  <main>
-    <section class="editor-panel">
-      <textarea id="editor" spellcheck="false" aria-label="Editor Python">print("Olá, mundo!")
+<header class="filebar"><input id="filename" value="main.py" aria-label="Nome do arquivo"><div class="file-actions"><label class="button" for="upload">↑ Upload</label><input id="upload" type="file" multiple hidden><button id="download">↓ Download</button><button id="save" aria-label="Salvar no armazenamento local" title="Salvar">💾</button></div></header>
+<main>
+<aside class="file-manager"><div class="file-manager-title">Arquivos</div><div id="fileList"></div></aside>
+<section class="workspace">
+<section class="editor-panel"><textarea id="editor" spellcheck="false" aria-label="Editor de código">print("Olá, mundo!")
 
 nome = input("Seu nome: ")
-print(f"Olá, {nome}!")</textarea>
-    </section>
-
-    <section class="controlbar">
-      <label class="argv-label">sys.argv</label>
-      <input id="argv" class="argv-input" spellcheck="false" autocomplete="off" placeholder="Argumentos - sys.argv()">
-      <button id="run" disabled aria-label="Executar" title="Executar">▶</button>
-      <button id="clearTerminal" aria-label="Limpar terminal" title="Limpar terminal">🗑</button>
-      <button id="terminalToggle" aria-expanded="false">Terminal</button>
-    </section>
-
-    <section class="terminal-panel" id="terminalPanel">
-      <div id="terminal" role="log" aria-live="polite"></div>
-      <div class="terminal-input-row" id="terminalInputRow">
-        <span id="inputPrompt">›</span>
-        <input id="terminalInput" autocomplete="off" spellcheck="false" aria-label="Entrada do terminal" disabled>
-        <button id="sendInput" disabled>↵</button>
-      </div>
-    </section>
-  </main>
-
-  <script src="https://cdn.jsdelivr.net/pyodide/v0.28.2/full/pyodide.js"></script>
-  <script src="app.js"></script>
-</body>
-</html>
+print(f"Olá, {nome}!")</textarea><div id="preview" class="preview hidden"></div></section>
+<section class="controlbar"><input id="argv" class="argv-input" spellcheck="false" autocomplete="off" placeholder="Argumentos - sys.argv()"><button id="run" disabled aria-label="Executar" title="Executar">▶</button><button id="clearTerminal" aria-label="Limpar terminal" title="Limpar terminal">🗑</button><button id="terminalToggle" aria-expanded="false">Terminal</button></section>
+<section class="terminal-panel" id="terminalPanel"><div id="terminal" role="log" aria-live="polite"></div><div class="terminal-input-row"><span id="inputPrompt">›</span><input id="terminalInput" autocomplete="off" spellcheck="false" aria-label="Entrada do terminal" disabled><button id="sendInput" disabled>↵</button></div></section>
+</section></main>
+<script src="https://cdn.jsdelivr.net/pyodide/v0.28.2/full/pyodide.js"></script><script src="app.js"></script></body></html>
