@@ -9,10 +9,9 @@
 <body>
   <header class="topbar">
     <strong>NavTerminal</strong>
-    <span id="status">Carregando Python...</span>
     <div class="actions">
       <button id="run">▶ Executar</button>
-      <button id="clear">Limpar terminal</button>
+      <button id="terminalToggle">Terminal</button>
     </div>
   </header>
 
@@ -25,18 +24,20 @@ nome = input("Seu nome: ")
 print(f"Olá, {nome}!")</textarea>
     </section>
 
-    <section class="terminal-panel">
-      <div class="panel-title">Terminal</div>
+    <section class="terminal-panel" id="terminalPanel">
+      <div class="panel-title">
+        <span>Terminal</span>
+        <button id="clear">Limpar</button>
+      </div>
       <div id="terminal" role="log" aria-live="polite"></div>
       <div class="terminal-input-row">
         <span>›</span>
-        <input id="terminalInput" autocomplete="off" spellcheck="false" placeholder="Digite uma entrada para input()..." disabled>
-        <button id="sendInput" disabled>Enviar</button>
+        <input id="terminalInput" autocomplete="off" spellcheck="false" placeholder="input()" disabled>
+        <button id="sendInput" disabled>↵</button>
       </div>
     </section>
   </main>
 
-  <footer>Python roda localmente no navegador com Pyodide. Nenhum código é enviado ao servidor.</footer>
   <script src="https://cdn.jsdelivr.net/pyodide/v0.28.2/full/pyodide.js"></script>
   <script src="app.js"></script>
 </body>
