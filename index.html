@@ -7,32 +7,35 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header class="topbar">
-    <strong>NavTerminal</strong>
-    <div class="actions">
-      <button id="run">▶ Executar</button>
-      <button id="terminalToggle">Terminal</button>
+  <header class="filebar">
+    <input id="filename" value="main.py" aria-label="Nome do arquivo">
+    <div class="file-actions">
+      <label class="button" for="upload">↑ Upload</label>
+      <input id="upload" type="file" accept=".py,.txt,text/plain" hidden>
+      <button id="download">↓ Download</button>
     </div>
   </header>
 
   <main>
     <section class="editor-panel">
-      <div class="panel-title">main.py</div>
       <textarea id="editor" spellcheck="false" aria-label="Editor Python">print("Olá, mundo!")
 
 nome = input("Seu nome: ")
 print(f"Olá, {nome}!")</textarea>
     </section>
 
+    <section class="controlbar">
+      <label class="argv-label">sys.argv</label>
+      <input id="argv" class="argv-input" spellcheck="false" autocomplete="off" placeholder="argumentos separados por espaço">
+      <button id="run" disabled>▶ Executar</button>
+      <button id="terminalToggle" aria-expanded="false">Terminal</button>
+    </section>
+
     <section class="terminal-panel" id="terminalPanel">
-      <div class="panel-title">
-        <span>Terminal</span>
-        <button id="clear">Limpar</button>
-      </div>
       <div id="terminal" role="log" aria-live="polite"></div>
-      <div class="terminal-input-row">
-        <span>›</span>
-        <input id="terminalInput" autocomplete="off" spellcheck="false" placeholder="input()" disabled>
+      <div class="terminal-input-row" id="terminalInputRow">
+        <span id="inputPrompt">›</span>
+        <input id="terminalInput" autocomplete="off" spellcheck="false" aria-label="Entrada do terminal" disabled>
         <button id="sendInput" disabled>↵</button>
       </div>
     </section>
