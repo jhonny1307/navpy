@@ -10,6 +10,7 @@ const terminalInput = document.getElementById('terminalInput');
 const sendInput = document.getElementById('sendInput');
 const inputPrompt = document.getElementById('inputPrompt');
 const runButton = document.getElementById('run');
+const clearTerminalButton = document.getElementById('clearTerminal');
 const terminalToggle = document.getElementById('terminalToggle');
 const argvInput = document.getElementById('argv');
 const filenameInput = document.getElementById('filename');
@@ -37,6 +38,10 @@ function closeTerminal() {
 function toggleTerminal() {
   if (terminalPanel.classList.contains('open')) closeTerminal();
   else openTerminal();
+}
+
+function clearTerminal() {
+  terminal.replaceChildren();
 }
 
 function setInputEnabled(enabled, promptText = '') {
@@ -185,6 +190,7 @@ uploadInput.addEventListener('change', async () => {
 
 downloadButton.addEventListener('click', downloadCode);
 runButton.addEventListener('click', run);
+clearTerminalButton.addEventListener('click', clearTerminal);
 terminalToggle.addEventListener('click', toggleTerminal);
 sendInput.addEventListener('click', submitInput);
 terminalInput.addEventListener('keydown', event => {
