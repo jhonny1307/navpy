@@ -446,6 +446,26 @@ function markCleanIfSaved() {
 
 function persist() {
     closeFilesMenu();
+
+    const typedName = filenameInput.value.trim();
+    const oldPath = currentFile;
+    const oldName = nameOf(oldPath);
+
+    if (typedName && typedName !== oldName) {
+        const parent = parentOf(oldPath);
+        const newPath = normalize(
+            parent ? parent + '/' + typedName : typedName
+        );
+
+        if (newPath !== oldPath && !files[newPath]) {
+            saveCurrent();
+            files[newPath] = files[oldPath];
+            delete files[oldPath];
+            currentFile = newPath;
+            filenameInput.value = newPath;
+        }
+    }
+
     saveCurrent();
 
     try {
