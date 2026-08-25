@@ -291,7 +291,7 @@ function removeItem(p) {
     }
 
     renderList();
-    persist();
+    updateUnsavedIndicator();
 }
 
 function beginCreate(mode, root = false) {
@@ -400,9 +400,7 @@ function dataBlob(u) {
         a[i] = b.charCodeAt(i);
     }
 
-    return new Blob([
-        a
-    ], {
+    return new Blob([a], {
         type: (h.match(/data:(.*?);/) || [])[1]
             || 'application/octet-stream'
     });
