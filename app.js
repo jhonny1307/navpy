@@ -356,8 +356,6 @@ function confirmCreate() {
     if (m === 'file') {
         openFile(p);
     }
-
-    persist();
 }
 
 async function addFile(file, path) {
