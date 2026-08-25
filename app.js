@@ -33,6 +33,7 @@ let files = {
 
 let currentFile = 'main.py';
 const STORAGE_KEY = 'navterminal.files.v1';
+const DRAFT_KEY = 'navterminal.draft.v1';
 
 let tips = [];
 let recentTips = [];
@@ -440,6 +441,23 @@ function markCleanIfSaved() {
     updateUnsavedIndicator();
 }
 
+function saveDraft() {
+    try {
+        localStorage.setItem(
+            DRAFT_KEY,
+            JSON.stringify({
+                files,
+                currentFile,
+                currentPath
+            })
+        );
+    } catch (e) {}
+}
+
+function clearDraft() {
+    localStorage.removeItem(DRAFT_KEY);
+}
+
 function persist() {
     closeFilesMenu();
 
@@ -471,6 +489,7 @@ function persist() {
         );
 
         savedSnapshot = snapshot();
+        clearDraft();
         updateUnsavedIndicator();
     } catch (e) {
         write('Save error: ' + e, 'error');
@@ -511,6 +530,35 @@ function loadSaved() {
     } catch (e) {}
 
     return false;
+}
+
+function loadDraft() {
+    try {
+        const draft = JSON.parse(
+            localStorage.getItem(DRAFT_KEY) || 'null'
+        );
+
+        if (!draft?.files || !Object.keys(draft.files).length) {
+            return false;
+        }
+
+        files = draft.files;
+        currentFile = draft.currentFile || 'main.py';
+        currentPath = draft.currentPath || '';
+
+        if (!files[currentFile]) {
+            currentFile = Object.keys(files).find(
+                x => files[x].type === 'text' && /\.py$/i.test(x)
+            ) || Object.keys(files)[0];
+        }
+
+        filenameInput.value = currentFile;
+        renderFile(currentFile);
+
+        return true;
+    } catch (e) {
+        return false;
+    }
 }
 
 function toggleFilesMenu() {
@@ -859,6 +907,7 @@ $('tipBar').onclick = showTip;
 editor.oninput = () => {
     saveCurrent();
     updateUnsavedIndicator();
+    saveDraft();
 };
 
 document.addEventListener('click', e => {
@@ -871,15 +920,37 @@ document.addEventListener('click', e => {
     }
 });
 
+window.addEventListener('pagehide', () => {
+    if (hasUnsavedChanges()) {
+        saveDraft();
+    }
+});
+
 window.addEventListener('beforeunload', e => {
     if (hasUnsavedChanges()) {
+        saveDraft();
         e.preventDefault();
         e.returnValue = '';
     }
 });
 
 (async () => {
-    loadSaved() || renderFile('main.py');
+    const hasDraft = loadDraft();
+
+    if (!hasDraft) {
+        loadSaved() || renderFile('main.py');
+    } else {
+        try {
+            const d = JSON.parse(
+                localStorage.getItem(STORAGE_KEY) || '{}'
+            );
+            savedSnapshot = JSON.stringify(d);
+        } catch (e) {
+            savedSnapshot = '{}';
+        }
+
+        updateUnsavedIndicator();
+    }
 
     if (!Object.keys(files).some(
         x => files[x].type === 'text' && /\.py$/i.test(x)
